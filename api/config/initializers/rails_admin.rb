@@ -46,14 +46,14 @@ RailsAdmin.config do |config|
 
     show do
       configure :tbrc_link
-      field :tbrc_link do
-       formatted_value do
-         bindings[:view].tag(:a, { :href => bindings[:object].tbrc_link, :target => '_blank' }) << value
-       end
-      end
-      fields :tbrc_rid, :default_name, :wylie_name, :wylie_name_script, :birth_year, :death_year, :birth_approx, :death_approx, :lived, :gender, 
+      fields :tbrc_rid, :tbrc_link, :default_name, :wylie_name, :wylie_name_script, :birth_year, :death_year, :birth_approx, :death_approx, :lived, :gender, 
         :har_url, :landmark_id, :geography_id, :community_id, :historical_period_id, :tradition_id, :birth_century_id, :death_century_id, :birth_estimated, :death_estimated,
         :default_title, :wylie_title, :published_default_name, :published_wylie_name, :url_default_name, :url_wylie_name, :person_type
+      field :tbrc_link do
+       formatted_value do
+         bindings[:view].content_tag(:a, bindings[:object].tbrc_link, href: bindings[:object].tbrc_link, target: '_blank')
+       end
+      end
     end
   end
 
