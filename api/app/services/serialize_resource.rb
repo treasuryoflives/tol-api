@@ -29,16 +29,20 @@ class SerializeResource
     PREFIXES[prefix] + name
   end
 
+  def person_id
+    "P#{@person.person_id}"
+  end
+
   def add_triples
     add_type
     add_bdr_link
     add_default_name
-    add_default_title
+    #add_default_title
   end
 
   def add_type
     @graph << [
-      RDF::URI(create_resource(:tol, "P#{@person.person_id}")),
+      RDF::URI(create_resource(:tol, person_id)),
       RDF.type,
       RDF::URI(create_resource(:bdo, 'Person'))
     ]
@@ -46,17 +50,28 @@ class SerializeResource
 
   def add_bdr_link
     @graph << [
-      RDF::URI(create_resource(:tol, "P#{@person.person_id}")),
+      RDF::URI(create_resource(:tol, person_id)),
       RDF::OWL.sameAs,
       RDF::URI(create_resource(:bdr, @person.tbrc_rid))
     ]
   end
 
   def add_default_name
+    blank_node = RDF::Node.new
     @graph << [
-      RDF::URI(create_resource(:bdo, 'PersonPrimaryName')),
+      RDF::URI(create_resource(:tol, person_id)),
+      RDF::URI(create_resource(:bdo, "personName")),
+      blank_node
+    ]
+    @graph << [
+      blank_node,
       RDF::RDFS.label,
       @person.default_name
+    ]
+    @graph << [
+      blank_node,
+      RDF.type,
+      RDF::URI(create_resource(:bdo, 'PersonPrimaryName')),
     ]
   end
 
