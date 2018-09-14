@@ -8,6 +8,14 @@ class SerializeResource
     rdfs: "http://www.w3.org/2000/01/rdf-schema#"
   }
 
+  LANGUAGE_CODES = {
+    'russian': '',
+    'japanese': '',
+    'french': '',
+    'mongolian': 'mg-x-poppe-simpl',
+    'chinese': '' 
+  }
+
   def initialize(person)
     @person = person
     @graph = RDF::Graph.new
@@ -41,6 +49,9 @@ class SerializeResource
     add_default_title
     add_wylie_name
     add_gender
+    add_birth
+    add_death
+    add_name_variants if @person.name_variants.length > 0
   end
 
   def add_type
@@ -97,6 +108,27 @@ class SerializeResource
     ]
   end
 
+  def add_name_variants
+    @person.name_variants.each do |name_variant|
+      blank_node = RDF::Node.new
+      @graph << [
+        @person_uri,
+        resource(:bdo, "personName"),
+        blank_node
+      ]
+      @graph << [
+        blank_node,
+        RDF::RDFS.label,
+        RDF::Literal.new(name_variant.name_variant_text, :language => 'bo-x-ewts')
+      ]
+      @graph << [
+        blank_node,
+        RDF.type,
+        resource(:bdo, 'PersonOtherName')
+      ]
+    end
+  end
+
   def add_default_title
     blank_node = RDF::Node.new
     @graph << [
@@ -124,7 +156,52 @@ class SerializeResource
     ]
   end
 
+  def add_birth
+    blank_node = RDF::Node.new
+    @graph << [
+      @person_uri,
+      resource(:bdo, "personEvent"),
+      blank_node
+    ]
+    @graph << [
+      blank_node,
+      resource(:bdo, "onYear"),
+      @person.birth_year
+    ]
+    @graph << [
+      blank_node,
+      RDF.type,
+      resource(:bdo, "PersonBirth")
+    ]
+  end
+
+  def add_death
+    blank_node = RDF::Node.new
+    @graph << [
+      @person_uri,
+      resource(:bdo, "personEvent"),
+      blank_node
+    ]
+    @graph << [
+      blank_node,
+      resource(:bdo, "onYear"),
+      @person.death_year
+    ]
+    @graph << [
+      blank_node,
+      RDF.type,
+      resource(:bdo, "PersonDeath")
+    ]
+  end
+
   def resource(prefix, name)
     RDF::URI(create_resource(prefix, name))
+  end
+
+  def language_code(language_type)
+    return '' if language_type.nil?
+    case language_type.language_type_key
+    when 'russian' 
+    end
   end
 end
