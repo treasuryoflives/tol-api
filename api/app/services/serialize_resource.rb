@@ -11,6 +11,7 @@ class SerializeResource
   def initialize(person)
     @person = person
     @graph = RDF::Graph.new
+    @person_uri = resource(:tol, "P#{@person.person_id}")
   end
 
   def serialize
@@ -37,30 +38,32 @@ class SerializeResource
     add_type
     add_bdr_link
     add_default_name
-    #add_default_title
+    add_default_title
+    add_wylie_name
+    add_gender
   end
 
   def add_type
     @graph << [
-      RDF::URI(create_resource(:tol, person_id)),
+      @person_uri,
       RDF.type,
-      RDF::URI(create_resource(:bdo, 'Person'))
+      resource(:bdo, 'Person')
     ]
   end
 
   def add_bdr_link
     @graph << [
-      RDF::URI(create_resource(:tol, person_id)),
+      @person_uri,
       RDF::OWL.sameAs,
-      RDF::URI(create_resource(:bdr, @person.tbrc_rid))
+      resource(:bdr, @person.tbrc_rid)
     ]
   end
 
   def add_default_name
     blank_node = RDF::Node.new
     @graph << [
-      RDF::URI(create_resource(:tol, person_id)),
-      RDF::URI(create_resource(:bdo, "personName")),
+      @person_uri,
+      resource(:bdo, "personName"),
       blank_node
     ]
     @graph << [
@@ -71,15 +74,57 @@ class SerializeResource
     @graph << [
       blank_node,
       RDF.type,
-      RDF::URI(create_resource(:bdo, 'PersonPrimaryName')),
+      resource(:bdo, 'PersonPrimaryName'),
+    ]
+  end
+
+  def add_wylie_name
+    blank_node = RDF::Node.new
+    @graph << [
+      @person_uri,
+      resource(:bdo, "personName"),
+      blank_node
+    ]
+    @graph << [
+      blank_node,
+      RDF::RDFS.label,
+      RDF::Literal.new(@person.wylie_name, :language => 'bo-x-ewts')
+    ]
+    @graph << [
+      blank_node,
+      RDF.type,
+      resource(:bdo, 'PersonOtherName')
     ]
   end
 
   def add_default_title
+    blank_node = RDF::Node.new
     @graph << [
-      RDF::URI(create_resource(:bdo, 'PersonPrimaryTitle')),
+      @person_uri,
+      resource(:bdo, "personName"),
+      blank_node
+    ]
+    @graph << [
+      blank_node,
       RDF::RDFS.label,
       @person.default_title
     ]
+    @graph << [
+      blank_node,
+      RDF.type,
+      resource(:bdo, 'PersonPrimaryTitle')
+    ]
+  end
+
+  def add_gender
+    @graph << [
+      @person_uri,
+      resource(:bdo, "personGender"),
+      resource(:bdr, "GenderMale")
+    ]
+  end
+
+  def resource(prefix, name)
+    RDF::URI(create_resource(prefix, name))
   end
 end
