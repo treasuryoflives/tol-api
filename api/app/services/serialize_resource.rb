@@ -46,12 +46,10 @@ class SerializeResource
     add_type
     add_bdr_link
     add_default_name
-    add_default_title
-    add_wylie_name
+    add_other_names
     add_gender
     add_birth
     add_death
-    add_name_variants if @person.name_variants.length > 0
   end
 
   def add_type
@@ -80,7 +78,7 @@ class SerializeResource
     @graph << [
       blank_node,
       RDF::RDFS.label,
-      @person.default_name
+      RDF::Literal.new(@person.default_name, :language => 'bo-x-phon-en')
     ]
     @graph << [
       blank_node,
@@ -89,42 +87,31 @@ class SerializeResource
     ]
   end
 
-  def add_wylie_name
+  def add_other_names
     blank_node = RDF::Node.new
     @graph << [
       @person_uri,
-      resource(:bdo, "personName"),
+      resource(:bdo, 'personName'),
       blank_node
     ]
-    @graph << [
-      blank_node,
-      RDF::RDFS.label,
-      RDF::Literal.new(@person.wylie_name, :language => 'bo-x-ewts')
-    ]
+
     @graph << [
       blank_node,
       RDF.type,
       resource(:bdo, 'PersonOtherName')
     ]
-  end
 
-  def add_name_variants
+    @graph << [
+      blank_node,
+      RDF::RDFS.label,
+      RDF::Literal.new(@person.wylie_name, :language => 'bo-x-ewts')
+    ]
+    
     @person.name_variants.each do |name_variant|
-      blank_node = RDF::Node.new
-      @graph << [
-        @person_uri,
-        resource(:bdo, "personName"),
-        blank_node
-      ]
       @graph << [
         blank_node,
         RDF::RDFS.label,
         RDF::Literal.new(name_variant.name_variant_text, :language => 'bo-x-ewts')
-      ]
-      @graph << [
-        blank_node,
-        RDF.type,
-        resource(:bdo, 'PersonOtherName')
       ]
     end
   end
