@@ -69,3 +69,5 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 gem 'rdf', '~> 3.0', '>= 3.0.2'
 gem 'rdf-turtle', '~> 3.0', '>= 3.0.1'
+gem 'json-ld', '~> 3.0', '>= 3.0.2'
+gem 'rdf-rdfxml', '~> 2.2', '>= 2.2.1'

@@ -16,19 +16,50 @@ class SerializeResource
     'chinese': '' 
   }
 
-  def initialize(person)
+  def initialize(person, type)
     @person = person
+    @type = type
     @graph = RDF::Graph.new
     @person_uri = resource(:tol, "P#{@person.person_id}")
   end
 
-  def serialize
-    add_triples
+  def write_jsonld
+    compacted = nil
 
+    # context can't have symbols
+    context = PREFIXES.stringify_keys
+
+    JSON::LD::API::fromRdf(@graph) do |expanded|
+      compacted = JSON::LD::API.compact(expanded, context)
+    end
+  end
+
+  def write_rdfxml
+    RDF::RDFXML::Writer.buffer(prefixes: PREFIXES) do |writer|
+      @graph.each_statement do |statement|
+        writer << statement
+      end
+    end
+  end
+
+  def write_turtle
     RDF::Turtle::Writer.buffer(prefixes: PREFIXES) do |writer|
       @graph.each_statement do |statement|
         writer << statement
       end
+    end
+  end
+
+  def serialize
+    add_triples
+    
+    case @type
+    when :turtle
+      write_turtle
+    when :jsonld
+      write_jsonld
+    when :rdfxml
+      write_rdfxml
     end
   end
 
