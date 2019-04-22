@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::Base
   def home
-    render :html => 'use /resource/<p_id>'
+    render :html => 'use /resource/TOLP<p_id>'
   end
 
   def not_found

@@ -1,4 +1,5 @@
 class NameVariant < ApplicationRecord
   self.table_name = 'name_variant'
-  has_one :language_type
+  belongs_to :language_type
+  belongs_to :encoding_type
 end

@@ -77,6 +77,7 @@ class SerializeResource
     add_type
     add_bdr_link
     add_default_name
+    add_default_title
     add_other_names
     add_gender
     add_birth
@@ -109,7 +110,7 @@ class SerializeResource
     @graph << [
       blank_node,
       RDF::RDFS.label,
-      RDF::Literal.new(@person.default_name, :language => 'bo-x-phon-en')
+      RDF::Literal.new(@person.default_name)
     ]
     @graph << [
       blank_node,
@@ -137,12 +138,28 @@ class SerializeResource
       RDF::RDFS.label,
       RDF::Literal.new(@person.wylie_name, :language => 'bo-x-ewts')
     ]
+
+    @graph << [
+      blank_node,
+      RDF::RDFS.label,
+      RDF::Literal.new(@person.published_default_name)
+    ]
+
+    @graph << [
+      blank_node,
+      RDF::RDFS.label,
+      RDF::Literal.new(@person.published_wylie_name, :language => 'bo-x-ewts')
+    ]
     
     @person.name_variants.each do |name_variant|
+      language = language_code(name_variant.encoding_type)
+      literal = language ? 
+        RDF::Literal.new(name_variant.name_variant_text, :language => language) :
+        RDF::Literal.new(name_variant.name_variant_text)
       @graph << [
         blank_node,
         RDF::RDFS.label,
-        RDF::Literal.new(name_variant.name_variant_text, :language => 'bo-x-ewts')
+        literal
       ]
     end
   end
@@ -216,10 +233,14 @@ class SerializeResource
     RDF::URI(create_resource(prefix, name))
   end
 
-  def language_code(language_type)
-    return '' if language_type.nil?
-    case language_type.language_type_key
-    when 'russian' 
+  def language_code(encoding_type)
+    return nil if encoding_type.nil?
+
+    case  encoding_type.encoding_type_key
+    when 'extendedWylie' 
+      'bo-x-ewts'
+    else
+      nil
     end
   end
 end

@@ -4,8 +4,10 @@ class ResourceController < ApplicationController
 
 		id = params[:id]
     case id
-    when /^P/
-      @person = Person.find_by_person_id(id[1..-1]) or not_found
+    when /^TOLP/
+      @person = Person
+                .eager_load(name_variants: :encoding_type)
+                .find_by_person_id(id[4..-1]) or not_found
     else
       not_found
     end
