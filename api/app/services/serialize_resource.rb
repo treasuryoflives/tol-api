@@ -20,7 +20,7 @@ class SerializeResource
     @person = person
     @type = type
     @graph = RDF::Graph.new
-    @person_uri = resource(:tol, "P#{@person.person_id}")
+    @person_uri = resource(:tol, "TOLP#{@person.person_id}")
   end
 
   def write_jsonld
@@ -67,10 +67,6 @@ class SerializeResource
 
   def create_resource(prefix, name)
     PREFIXES[prefix] + name
-  end
-
-  def person_id
-    "P#{@person.person_id}"
   end
 
   def add_triples
