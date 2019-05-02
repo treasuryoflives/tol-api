@@ -20,8 +20,8 @@ class ResourceController < ApplicationController
       format.jsonld do
         render json: SerializeResource.new(@person, :jsonld).serialize       
       end
-      format.turtle do
-        render plain: SerializeResource.new(@person, :turtle).serialize 
+      format.ttl do
+        render plain: SerializeResource.new(@person, :ttl).serialize 
       end
       format.rdfxml do
         render xml: SerializeResource.new(@person, :rdfxml).serialize

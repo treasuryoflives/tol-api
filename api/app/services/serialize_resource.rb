@@ -54,7 +54,7 @@ class SerializeResource
     add_triples
     
     case @type
-    when :turtle
+    when :ttl
       write_turtle
     when :jsonld
       write_jsonld
