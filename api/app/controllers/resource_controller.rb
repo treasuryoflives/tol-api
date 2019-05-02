@@ -18,15 +18,32 @@ class ResourceController < ApplicationController
         redirect_to "https://treasuryoflives.org/biographies/view/#{url_name}/#{@person.person_id}"
       end
       format.jsonld do
-        render json: SerializeResource.new(@person, :jsonld).serialize       
+        render_json
       end
+      format.json do
+        render_json
+      end
+
       format.ttl do
         render plain: SerializeResource.new(@person, :ttl).serialize 
       end
-      format.rdfxml do
-        render xml: SerializeResource.new(@person, :rdfxml).serialize
+
+      format.rdf do
+        render_rdfxml
+      end
+      format.xml do
+        render_rdfxml
       end
     end
 	end	
 
+  private
+
+  def render_json
+    render json: SerializeResource.new(@person, :jsonld).serialize       
+  end
+
+  def render_rdfxml
+    render xml: SerializeResource.new(@person, :rdf).serialize
+  end
 end

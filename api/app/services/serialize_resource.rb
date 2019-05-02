@@ -1,11 +1,13 @@
 # serializes an Active Record resources as RDF
 class SerializeResource
   PREFIXES = {
-    tol: "http://api.treasuryoflives.org/resource/",  
-    bdr: "http://purl.bdrc.io/resource/",
-    bdo: "http://purl.bdrc.io/ontology/core/",
-    owl: "http://www.w3.org/2002/07/owl#",
-    rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+    tol:  "http://api.treasuryoflives.org/resource/",  
+    bdr:  "http://purl.bdrc.io/resource/",
+    bdo:  "http://purl.bdrc.io/ontology/core/",
+    owl:  "http://www.w3.org/2002/07/owl#",
+    rdfs: "http://www.w3.org/2000/01/rdf-schema#",
+    adm:  "http://purl.bdrc.io/ontology/admin/",
+    xsd:  "http://www.w3.org/2001/XMLSchema#"
   }
 
   LANGUAGE_CODES = {
@@ -20,7 +22,7 @@ class SerializeResource
     @person = person
     @type = type
     @graph = RDF::Graph.new
-    @person_uri = resource(:tol, "TOLP#{@person.person_id}")
+    @person_uri = uri(:tol, "TOLP#{@person.person_id}")
   end
 
   def write_jsonld
@@ -56,35 +58,36 @@ class SerializeResource
     case @type
     when :ttl
       write_turtle
-    when :jsonld
+    when :jsonld, :json
       write_jsonld
-    when :rdfxml
+    when :rdf, :xml
       write_rdfxml
     end
   end
 
   private
 
-  def create_resource(prefix, name)
+  def create_uri(prefix, name)
     PREFIXES[prefix] + name
   end
 
   def add_triples
     add_type
-    add_bdr_link
-    add_default_name
-    add_default_title
-    add_other_names
-    add_gender
-    add_birth
-    add_death
+    add_bdr_link unless @person.tbrc_rid.blank?
+    add_default_name unless @person.default_name.blank?
+    add_default_title unless @person.default_title.blank?
+    add_other_names # case when none are available handled in this method
+    add_gender unless @person.gender.blank?
+    add_birth unless @person.birth_year.blank?
+    add_death unless @person.death_year.blank?
+    add_har_url unless @person.har_url.blank?
   end
 
   def add_type
     @graph << [
       @person_uri,
       RDF.type,
-      resource(:bdo, 'Person')
+      uri(:bdo, 'Person')
     ]
   end
 
@@ -92,7 +95,7 @@ class SerializeResource
     @graph << [
       @person_uri,
       RDF::OWL.sameAs,
-      resource(:bdr, @person.tbrc_rid)
+      uri(:bdr, @person.tbrc_rid)
     ]
   end
 
@@ -100,7 +103,7 @@ class SerializeResource
     blank_node = RDF::Node.new
     @graph << [
       @person_uri,
-      resource(:bdo, "personName"),
+      uri(:bdo, "personName"),
       blank_node
     ]
     @graph << [
@@ -111,22 +114,27 @@ class SerializeResource
     @graph << [
       blank_node,
       RDF.type,
-      resource(:bdo, 'PersonPrimaryName'),
+      uri(:bdo, 'PersonPrimaryName'),
     ]
   end
 
   def add_other_names
+    return if @person.wylie_name.blank? && 
+              @person.published_default_name.blank? && 
+              @person.published_wylie_name.blank? && 
+              @person.name_variants.empty? 
+
     blank_node = RDF::Node.new
     @graph << [
       @person_uri,
-      resource(:bdo, 'personName'),
+      uri(:bdo, 'personName'),
       blank_node
     ]
 
     @graph << [
       blank_node,
       RDF.type,
-      resource(:bdo, 'PersonOtherName')
+      uri(:bdo, 'PersonOtherName')
     ]
 
     @graph << [
@@ -164,7 +172,7 @@ class SerializeResource
     blank_node = RDF::Node.new
     @graph << [
       @person_uri,
-      resource(:bdo, "personName"),
+      uri(:bdo, "personName"),
       blank_node
     ]
     @graph << [
@@ -175,15 +183,15 @@ class SerializeResource
     @graph << [
       blank_node,
       RDF.type,
-      resource(:bdo, 'PersonPrimaryTitle')
+      uri(:bdo, 'PersonPrimaryTitle')
     ]
   end
 
   def add_gender
     @graph << [
       @person_uri,
-      resource(:bdo, "personGender"),
-      resource(:bdr, "GenderMale")
+      uri(:bdo, "personGender"),
+      uri(:bdr, "GenderMale")
     ]
   end
 
@@ -191,18 +199,18 @@ class SerializeResource
     blank_node = RDF::Node.new
     @graph << [
       @person_uri,
-      resource(:bdo, "personEvent"),
+      uri(:bdo, "personEvent"),
       blank_node
     ]
     @graph << [
       blank_node,
-      resource(:bdo, "onYear"),
+      uri(:bdo, "onYear"),
       @person.birth_year
     ]
     @graph << [
       blank_node,
       RDF.type,
-      resource(:bdo, "PersonBirth")
+      uri(:bdo, "PersonBirth")
     ]
   end
 
@@ -210,23 +218,31 @@ class SerializeResource
     blank_node = RDF::Node.new
     @graph << [
       @person_uri,
-      resource(:bdo, "personEvent"),
+      uri(:bdo, "personEvent"),
       blank_node
     ]
     @graph << [
       blank_node,
-      resource(:bdo, "onYear"),
+      uri(:bdo, "onYear"),
       @person.death_year
     ]
     @graph << [
       blank_node,
       RDF.type,
-      resource(:bdo, "PersonDeath")
+      uri(:bdo, "PersonDeath")
     ]
   end
 
-  def resource(prefix, name)
-    RDF::URI(create_resource(prefix, name))
+  def add_har_url
+    @graph << [
+      @person_uri,
+      uri(:adm, "seeOtherHA"),
+      RDF::Literal::AnyURI.new(@person.har_url)
+    ]
+  end
+
+  def uri(prefix, name)
+    RDF::URI(create_uri(prefix, name))
   end
 
   def language_code(encoding_type)
