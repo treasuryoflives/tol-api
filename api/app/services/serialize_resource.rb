@@ -262,7 +262,7 @@ class SerializeResource
       @graph << [
         blank_node,
         uri(:bdo, "Person"),
-        uri(:tol, inc.root_person_id.to_s)
+        uri(:tol, "TOLP#{inc.root_person_id}")
       ]
     end
   end
@@ -278,7 +278,7 @@ class SerializeResource
       @graph << [
         blank_node,
         uri(:bdo, "Person"),
-        uri(:tol, inc.leaf_person_id.to_s)
+        uri(:tol, "TOLP#{inc.leaf_person_id}")
       ]
     end
   end
