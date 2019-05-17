@@ -76,12 +76,15 @@ class SerializeResource
     add_bdr_link unless @person.tbrc_rid.blank?
     add_default_name unless @person.default_name.blank?
     add_default_title unless @person.default_title.blank?
-    add_other_names # case when none are available handled in this method
+    add_other_names # case when none are available handled inside this method, same for other methods with no guard
     add_gender unless @person.gender.blank?
     add_birth unless @person.birth_year.blank?
     add_death unless @person.death_year.blank?
     add_har_url unless @person.har_url.blank?
+    add_previous_incarnations
+    add_subsequent_incarnations
   end
+
 
   def add_type
     @graph << [
@@ -122,7 +125,8 @@ class SerializeResource
     return if @person.wylie_name.blank? && 
               @person.published_default_name.blank? && 
               @person.published_wylie_name.blank? && 
-              @person.name_variants.empty? 
+              @person.name_variants.empty? &&
+              @person.wylie_name_script.blank?
 
     blank_node = RDF::Node.new
     @graph << [
@@ -141,19 +145,25 @@ class SerializeResource
       blank_node,
       RDF::RDFS.label,
       RDF::Literal.new(@person.wylie_name, :language => 'bo-x-ewts')
-    ]
+    ] unless @person.wylie_name.blank?
+
+    @graph << [
+      blank_node,
+      RDF::RDFS.label,
+      RDF::Literal.new(@person.wylie_name_script, :language => 'bo')
+    ] unless @person.wylie_name_script.blank?
 
     @graph << [
       blank_node,
       RDF::RDFS.label,
       RDF::Literal.new(@person.published_default_name)
-    ]
+    ] unless @person.published_default_name.blank?
 
     @graph << [
       blank_node,
       RDF::RDFS.label,
       RDF::Literal.new(@person.published_wylie_name, :language => 'bo-x-ewts')
-    ]
+    ] unless @person.published_wylie_name.blank?
     
     @person.name_variants.each do |name_variant|
       language = language_code(name_variant.encoding_type)
@@ -239,6 +249,38 @@ class SerializeResource
       uri(:adm, "seeOtherHA"),
       RDF::Literal::AnyURI.new(@person.har_url)
     ]
+  end
+
+  def add_previous_incarnations
+    blank_node = RDF::Node.new
+    @graph << [
+      @person_uri,
+      uri(:bdo, "isIncarnation"),
+      blank_node
+    ] unless @person.previous_incarnations.empty?
+    @person.previous_incarnations.each do |inc|
+      @graph << [
+        blank_node,
+        uri(:bdo, "Person"),
+        uri(:tol, inc.root_person_id.to_s)
+      ]
+    end
+  end
+  
+  def add_subsequent_incarnations
+    blank_node = RDF::Node.new
+    @graph << [
+      @person_uri,
+      uri(:bdo, "hasIncarnation"),
+      blank_node
+    ] unless @person.subsequent_incarnations.empty?
+    @person.subsequent_incarnations.each do |inc|
+      @graph << [
+        blank_node,
+        uri(:bdo, "Person"),
+        uri(:tol, inc.leaf_person_id.to_s)
+      ]
+    end
   end
 
   def uri(prefix, name)
