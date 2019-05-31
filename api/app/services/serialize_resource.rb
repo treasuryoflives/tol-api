@@ -1,4 +1,4 @@
-# serializes an Active Record resources as RDF
+# serializes an Active Record resource as RDF
 class SerializeResource
   PREFIXES = {
     tol:  "http://api.treasuryoflives.org/resource/",  
