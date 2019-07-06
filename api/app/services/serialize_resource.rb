@@ -83,6 +83,8 @@ class SerializeResource
     add_har_url unless @person.har_url.blank?
     add_previous_incarnations
     add_subsequent_incarnations
+    add_teachers
+    add_students
   end
 
 
@@ -279,6 +281,38 @@ class SerializeResource
         blank_node,
         uri(:bdo, "Person"),
         uri(:tol, "TOLP#{inc.leaf_person_id}")
+      ]
+    end
+  end
+
+  def add_teachers
+    blank_node = RDF::Node.new
+    @graph << [
+      @person_uri,
+      uri(:bdo, "personStudentOf"),
+      blank_node
+    ] unless @person.teachers.empty?
+    @person.teachers.each do |teacher|
+      @graph << [
+        blank_node,
+        uri(:bdo, "Person"),
+        uri(:tol, "TOLP#{teacher.teacher_person_id}")
+      ]
+    end
+  end
+
+  def add_students
+    blank_node = RDF::Node.new
+    @graph << [
+      @person_uri,
+      uri(:bdo, "personTeacherOf"),
+      blank_node
+    ] unless @person.students.empty?
+    @person.students.each do |student|
+      @graph << [
+        blank_node,
+        uri(:bdo, "Person"),
+        uri(:tol, "TOLP#{student.student_person_id}")
       ]
     end
   end
