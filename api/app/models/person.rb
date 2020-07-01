@@ -12,7 +12,7 @@ class Person < ApplicationRecord
   end
 
   def self.serialize_all
-    File.open('all_persons.ttl', 'a') do |file|
+    File.open('all_persons.ttl', 'w') do |file|
       Person.all.each do |person|
         file.write SerializeResource.new(person, :ttl).serialize 
       end
