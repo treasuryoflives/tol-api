@@ -10,4 +10,12 @@ class Person < ApplicationRecord
   def tbrc_link
     "http://purl.bdrc.io/resource/#{tbrc_rid}.ttl"
   end
+
+  def self.serialize_all
+    File.open('all_persons.ttl', 'a') do |file|
+      Person.all.each do |person|
+        file.write SerializeResource.new(person, :ttl).serialize 
+      end
+    end
+  end
 end
