@@ -254,67 +254,43 @@ class SerializeResource
   end
 
   def add_previous_incarnations
-    blank_node = RDF::Node.new
-    @graph << [
-      @person_uri,
-      uri(:bdo, "isIncarnation"),
-      blank_node
-    ] unless @person.previous_incarnations.empty?
     @person.previous_incarnations.each do |inc|
       @graph << [
-        blank_node,
-        uri(:bdo, "Person"),
+        @person_uri,
+        uri(:bdo, "isIncarnation"),
         uri(:tol, "TOLP#{inc.root_person_id}")
       ]
-    end
+    end unless @person.previous_incarnations.empty?
   end
   
   def add_subsequent_incarnations
-    blank_node = RDF::Node.new
-    @graph << [
-      @person_uri,
-      uri(:bdo, "hasIncarnation"),
-      blank_node
-    ] unless @person.subsequent_incarnations.empty?
     @person.subsequent_incarnations.each do |inc|
       @graph << [
-        blank_node,
-        uri(:bdo, "Person"),
+        @person_uri,
+        uri(:bdo, "hasIncarnation"),
         uri(:tol, "TOLP#{inc.leaf_person_id}")
       ]
-    end
+    end unless @person.subsequent_incarnations.empty?
   end
 
   def add_teachers
-    blank_node = RDF::Node.new
-    @graph << [
-      @person_uri,
-      uri(:bdo, "personStudentOf"),
-      blank_node
-    ] unless @person.teachers.empty?
     @person.teachers.each do |teacher|
       @graph << [
-        blank_node,
-        uri(:bdo, "Person"),
+        @person_uri,
+        uri(:bdo, "personStudentOf"),
         uri(:tol, "TOLP#{teacher.teacher_person_id}")
       ]
-    end
+    end unless @person.teachers.empty?
   end
 
   def add_students
-    blank_node = RDF::Node.new
-    @graph << [
-      @person_uri,
-      uri(:bdo, "personTeacherOf"),
-      blank_node
-    ] unless @person.students.empty?
     @person.students.each do |student|
       @graph << [
-        blank_node,
-        uri(:bdo, "Person"),
+        @person_uri,
+        uri(:bdo, "personTeacherOf"),
         uri(:tol, "TOLP#{student.student_person_id}")
       ]
-    end
+    end unless @person.students.empty?
   end
 
   def uri(prefix, name)
