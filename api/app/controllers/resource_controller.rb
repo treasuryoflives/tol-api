@@ -12,11 +12,9 @@ class ResourceController < ApplicationController
       not_found
     end
 
-    respond_to do |format| 
+respond_to do |format| 
       format.html do
-        url_name = @person.url_default_name || @person.published_default_name
-        url_name = url_name.gsub(' ', '-')
-        redirect_to "https://treasuryoflives.org/biographies/view/#{url_name}/#{@person.person_id}"
+        redirect_to @person.tol_link        
       end
       format.jsonld do
         render_json

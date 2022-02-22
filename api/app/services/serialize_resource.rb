@@ -7,7 +7,8 @@ class SerializeResource
     owl:  "http://www.w3.org/2002/07/owl#",
     rdfs: "http://www.w3.org/2000/01/rdf-schema#",
     adm:  "http://purl.bdrc.io/ontology/admin/",
-    xsd:  "http://www.w3.org/2001/XMLSchema#"
+    xsd:  "http://www.w3.org/2001/XMLSchema#",
+    wdrs: "http://www.w3.org/2007/05/powder-s#"
   }
 
   LANGUAGE_CODES = {
@@ -85,6 +86,7 @@ class SerializeResource
     add_subsequent_incarnations
     add_teachers
     add_students
+    add_described_by
   end
 
 
@@ -203,8 +205,8 @@ class SerializeResource
     @graph << [
       @person_uri,
       uri(:bdo, "personGender"),
-      uri(:bdr, "GenderMale")
-    ]
+      uri(:bdr, @person.gender == 'M' ? "GenderMale" : "GenderFemale")
+    ] 
   end
 
   def add_birth
@@ -291,6 +293,16 @@ class SerializeResource
         uri(:tol, "TOLP#{student.student_person_id}")
       ]
     end unless @person.students.empty?
+  end
+
+  def add_described_by
+    return if !@person.biography.present?
+    
+    @graph << [
+      @person_uri,
+      uri(:wdrs, "describedby"),
+      @person.tol_link
+    ]
   end
 
   def uri(prefix, name)
