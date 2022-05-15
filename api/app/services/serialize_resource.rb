@@ -307,14 +307,14 @@ class SerializeResource
   end
 
   def add_traditions
-    @person.traditions.each do |tradition|
-      community = Community.where(community_name: tradition.tradition_name).first
-
-      @graph << [
-        @person_uri,
-        uri(:bdo, "associatedTradition"),
-        uri(:bdr, "TraditionTest")
-      ] if community && community.tbrc_id
+    @person.traditions.each do |tradition|      
+      if tradition.bdr_tradition.present?
+        @graph << [
+          @person_uri,
+            uri(:bdo, "associatedTradition"),
+            uri(:bdr, tradition.bdr_tradition.gsub('bdr:', ''))
+          ]
+        end
     end unless @person.traditions.empty?
   end
 
