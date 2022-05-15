@@ -86,6 +86,7 @@ class SerializeResource
     add_subsequent_incarnations
     add_teachers
     add_students
+    add_traditions
     add_described_by
   end
 
@@ -303,6 +304,18 @@ class SerializeResource
       uri(:wdrs, "describedby"),
       @person.tol_link
     ]
+  end
+
+  def add_traditions
+    @person.traditions.each do |tradition|
+      community = Community.where(community_name: tradition.tradition_name).first
+
+      @graph << [
+        @person_uri,
+        uri(:bdo, "associatedTradition"),
+        uri(:bdr, "TraditionTest")
+      ] if community && community.tbrc_id
+    end unless @person.traditions.empty?
   end
 
   def uri(prefix, name)
